@@ -1,0 +1,22 @@
+{
+  "name": "advent-of-code",
+  "version": "1.0.0",
+  "description": "My solutions to adventofcode.com problems for 2015.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/darkterbear/advent-of-code.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/darkterbear/advent-of-code/issues"
+  },
+  "homepage": "https://github.com/darkterbear/advent-of-code#readme",
+  "dependencies": {
+    "aoc-loader": "^1.2.0"
+  }
+}
