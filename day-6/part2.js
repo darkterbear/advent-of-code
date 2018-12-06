@@ -7,28 +7,30 @@ aocLoader(
 ).then(d => {
 	// d = require('fs').readFileSync('./test', 'utf8')
 
-	const points = d.split('\n').map(l => [l.split(', ')[0], l.split(', ')[1], 0])
+	const points = d.split('\n').map(l => [...l.split(', ').map(Number), 0])
 
-	let minX = points.reduce((a, c) => Math.min(a, c[0]), 100000)
-	let minY = points.reduce((a, c) => Math.min(a, c[1]), 100000)
-	let maxX = points.reduce((a, c) => Math.max(a, c[0]), 0)
-	let maxY = points.reduce((a, c) => Math.max(a, c[1]), 0)
+	let e = points.reduce(
+		(a, c) => {
+			return [
+				Math.min(a[0], c[0]),
+				Math.min(a[1], c[1]),
+				Math.max(a[2], c[0]),
+				Math.max(a[3], c[1])
+			]
+		},
+		[1000, 1000, 0, 0]
+	)
 
 	let counter = 0
-	for (let x = minX - 200; x <= maxX + 200; x++) {
-		for (let y = minY - 200; y <= maxY + 200; y++) {
-			let sum = 0
-			for (let i = 0; i < points.length; i++) {
-				const p = points[i]
-
-				const md = Math.abs(p[0] - x) + Math.abs(p[1] - y)
-
-				sum += md
-			}
+	for (let x = e[0] - 200; x <= e[2] + 200; x++) {
+		for (let y = e[1] - 200; y <= e[3] + 200; y++) {
+			let sum = points.reduce(
+				(a, p) => a + Math.abs(p[0] - x) + Math.abs(p[1] - y),
+				0
+			)
 			if (sum < 10000) counter++
 		}
 	}
 
-	// points.sort((a, b) => a[2] - b[2])
 	console.log(counter)
 })

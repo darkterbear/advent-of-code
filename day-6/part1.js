@@ -7,27 +7,25 @@ aocLoader(
 ).then(d => {
 	// d = require('fs').readFileSync('./test', 'utf8')
 
-	const points = d.split('\n').map(l => [l.split(', ')[0], l.split(', ')[1], 0])
+	const points = d.split('\n').map(l => [...l.split(', ').map(Number), 0])
 	// console.log(points)
-	let minX = points.reduce((a, c) => Math.min(a, c[0]), 100000)
-	let minY = points.reduce((a, c) => Math.min(a, c[1]), 100000)
-	let maxX = points.reduce((a, c) => Math.max(a, c[0]), 0)
-	let maxY = points.reduce((a, c) => Math.max(a, c[1]), 0)
-	// console.log(maxX, maxY)
+	let e = points.reduce(
+		(a, c) => {
+			return [
+				Math.min(a[0], c[0]),
+				Math.min(a[1], c[1]),
+				Math.max(a[2], c[0]),
+				Math.max(a[3], c[1])
+			]
+		},
+		[1000, 1000, 0, 0]
+	)
 
-	points.forEach(p => {
-		p[0] -= minX - 1
-		p[1] -= minY - 1
-	})
-
-	// console.log(points)
-
-	// let score = Array.from({ length: points.length }, () => 0)
-
-	for (let x = 0; x <= maxX - minX + 1; x++) {
-		for (let y = 0; y <= maxY - minY + 1; y++) {
+	const now = Date.now()
+	for (let x = e[0]; x <= e[2]; x++) {
+		for (let y = e[1]; y <= e[3]; y++) {
 			// calc manhattan distance
-			let min = 10000
+			let min = 1000
 			let minIndex = -1
 
 			for (let i = 0; i < points.length; i++) {
@@ -41,7 +39,6 @@ aocLoader(
 				} else if (md === min) minIndex = -1
 			}
 
-			if (minIndex === 4) console.log(x, y, minIndex)
 			if (minIndex >= 0) points[minIndex][2]++
 		}
 	}
