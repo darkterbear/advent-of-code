@@ -5,14 +5,13 @@ aocLoader(
 	8,
 	'53616c7465645f5ff8b638d2c68c03cc3d780a40205335f819cd49e1e74f43b6b80111b52cbbaf243b1bf68109e5c3f4'
 ).then(d => {
-	d = require('fs').readFileSync('./test', 'utf8')
+	// d = require('fs').readFileSync('./test', 'utf8')
 
 	getEnds = children => {
 		let level = 0
 		let headers = []
 		let ends = []
 		for (let i = 0; i < children.length; i++) {
-			let header = headers[level]
 			let prevHeader = headers[level - 1]
 
 			if (!prevHeader) {
@@ -23,11 +22,9 @@ aocLoader(
 			} else {
 				if (prevHeader.numChildren > 0) {
 					// go to next level
-					console.log('there are children, go to next level')
 					level++
 					headers.push({ numChildren: children[i], numMeta: children[i + 1] })
 					i++
-					console.log(headers, level)
 					continue
 				}
 
@@ -40,23 +37,16 @@ aocLoader(
 					if (level === 0) {
 						ends.push(i)
 					} else {
-						console.log(headers, level)
-						if (headers[level - 1].numChildren > 2) {
-							headers[level - 1].numChildren--
-						} else {
-							headers.pop()
-							level--
-						}
+						headers[level - 1].numChildren--
+						// level--
 					}
 				}
 			}
-			console.log(level)
 		}
 		return ends
 	}
 
 	const getSumOfMetadata = n => {
-		let numChildren = n[0]
 		let numMeta = n[1]
 
 		let children = n.slice(2, n.length - numMeta)
@@ -70,20 +60,12 @@ aocLoader(
 			)
 		}, 0)
 
-		console.log(
-			'this: ',
-			n.slice(n.length - numMeta + 1, n.length).reduce((a, c) => a + c, 0),
-			'; rest: ',
-			rest
-		)
 		return (
-			n.slice(n.length - numMeta + 1, n.length).reduce((a, c) => a + c, 0) +
-			rest
+			n.slice(n.length - numMeta, n.length).reduce((a, c) => a + c, 0) + rest
 		)
 	}
 
 	const nums = d.split(' ').map(Number)
-	console.log(d)
 
 	console.log(getSumOfMetadata(nums))
 })
