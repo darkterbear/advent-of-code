@@ -105,7 +105,6 @@ aocLoader(
 						let hasReached = false
 						for (let index = 0; index < last.length; index++) {
 							let lastReached = last[index]
-							let prevReached = reached.slice(0, reached.length - 1)
 							for (let dy = -1; dy <= 1; dy++) {
 								for (let dx = -1; dx <= 1; dx++) {
 									if (Math.abs(dy) === Math.abs(dx)) continue
@@ -117,10 +116,7 @@ aocLoader(
 									}
 
 									if (u[test.y][test.x] !== '.') continue
-									// if (contains(newReached, test)) continue
-									if (
-										prevReached.reduce((a, c) => a || contains(c, test), false)
-									)
+									if (reached.reduce((a, c) => a || contains(c, test), false))
 										continue
 
 									// test if this is one of the squares that we're looking for
@@ -135,11 +131,6 @@ aocLoader(
 										hasReached = true
 										test.reached = true
 										newReached.push(test)
-										// console.log(reached)
-										// newReached.sort((a, b) => {
-										// 	return a.y === b.y ? a.x - b.x : a.y - b.y
-										// })
-										// return reached
 										continue
 									}
 
@@ -161,7 +152,6 @@ aocLoader(
 				}
 
 				let path = findNearest(inRange, units[i].x, units[i].y, map)
-
 				if (!path) continue
 
 				// make the move towards nearest
