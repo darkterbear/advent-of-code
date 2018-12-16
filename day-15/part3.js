@@ -22,6 +22,7 @@ aocLoader(
 	})
 
 	let rounds = 0
+	let lastMap
 	while (true) {
 		// round
 
@@ -105,7 +106,6 @@ aocLoader(
 						let hasReached = false
 						for (let index = 0; index < last.length; index++) {
 							let lastReached = last[index]
-							let prevReached = reached.slice(0, reached.length - 1)
 							for (let dy = -1; dy <= 1; dy++) {
 								for (let dx = -1; dx <= 1; dx++) {
 									if (Math.abs(dy) === Math.abs(dx)) continue
@@ -119,7 +119,9 @@ aocLoader(
 									if (u[test.y][test.x] !== '.') continue
 									// if (contains(newReached, test)) continue
 									if (
-										prevReached.reduce((a, c) => a || contains(c, test), false)
+										reached
+											.slice(0, reached.length - 1)
+											.reduce((a, c) => a || contains(c, test), false)
 									)
 										continue
 
@@ -163,7 +165,7 @@ aocLoader(
 				let path = findNearest(inRange, units[i].x, units[i].y, map)
 
 				if (!path) continue
-
+				console.log(path)
 				// make the move towards nearest
 
 				// the nearest reached squares are reading-order, find the first reached square that is in reading order
