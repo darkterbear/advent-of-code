@@ -1,11 +1,10 @@
-let d = require('fs').readFileSync('./test1', 'utf8')
+let d = require('fs').readFileSync('./input', 'utf8')
 
 d = d.substring(1, d.length - 1)
 
 // console.log(d)
 
 const findLongest = p => {
-	console.log(p)
 	if (!p.includes('(') && !p.includes('|')) return p.length
 
 	if (p.includes('(')) {
@@ -15,9 +14,11 @@ const findLongest = p => {
 		let lengths = []
 
 		let start = -1
-		// TODO: figure out how to presplit a segment like E|NNENN(EESS(WNSE|)SSS|WWWSSSSE(SW|NNNE))
 		for (let i = 0; i < p.length; i++) {
-			if (p.charAt(i) === '(') {
+			if (p.charAt(i) === '|' && start === -1) {
+				lengths.push(mainLength)
+				mainLength = 0
+			} else if (p.charAt(i) === '(') {
 				if (start !== -1) {
 					lengths.push(
 						mainLength + findLongest(p.substring(start + 1, p.length - 1))
