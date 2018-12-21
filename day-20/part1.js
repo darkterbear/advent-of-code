@@ -1,51 +1,52 @@
-let d = require('fs').readFileSync('./input', 'utf8')
+const fs = require('fs')
+let d = fs.readFileSync('./input', 'utf8')
 
 d = d.substring(1, d.length - 1)
 
-// console.log(d)
+let maxDistance = 0
+let start = {
+	distance: 0
+}
 
-const findLongest = p => {
-	if (!p.includes('(') && !p.includes('|')) return p.length
+let current = [start]
 
-	if (p.includes('(')) {
-		// contains () and |
+const traverse = p => {
+	let chars = [...p]
 
-		let mainLength = 0
-		let lengths = []
-
-		let start = -1
-		for (let i = 0; i < p.length; i++) {
-			if (p.charAt(i) === '|' && start === -1) {
-				lengths.push(mainLength)
-				mainLength = 0
-			} else if (p.charAt(i) === '(') {
-				if (start !== -1) {
-					lengths.push(
-						mainLength + findLongest(p.substring(start + 1, p.length - 1))
-					)
-					break
-				} else start = i
-			} else if (p.charAt(i) === ')') {
-				lengths.push(mainLength + findLongest(p.substring(start + 1, i)))
-				start = -1
-			} else {
-				if (start === -1) mainLength++
+	for (c of chars) {
+		if (c === '(') {
+			current.splice(0, 0, current[0])
+		} else if (c === ')') {
+			current.splice(0, 1)
+		} else if (c === '|') {
+			if (current.length > 0) {
+				current[0] = current[1]
+			} else current[0] = start
+		} else {
+			if (!current[0][c]) {
+				let newNode = {
+					distance: current[0].distance + 1
+				}
+				let opposite = (c => {
+					switch (c) {
+						case 'N':
+							return 'S'
+						case 'E':
+							return 'W'
+						case 'S':
+							return 'N'
+						case 'W':
+							return 'E'
+					}
+				})(c)
+				newNode[opposite] = current[0]
+				current[0][c] = newNode
+				current[0] = newNode
 			}
 		}
-		lengths.push(mainLength)
-
-		return lengths.sort((a, b) => b - a)[0]
-	} else {
-		// only contains |
-		let max = 0
-		p.split('|').forEach(s => {
-			if (s.length === 0) return
-			if (s.length > max) max = s.length
-		})
-
-		if (p.charAt(p.length - 1) === '|') return max / 2
-		else return max
+		if (current[0].distance > maxDistance) maxDistance = current[0].distance
 	}
 }
 
-console.log(findLongest(d))
+traverse(d)
+console.log(maxDistance)
