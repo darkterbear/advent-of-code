@@ -11,23 +11,56 @@ aocLoader(
 		return b.match(/[0-9-]+/g).map(Number)
 	})
 
-	let extremes = [
-		Number.MIN_SAFE_INTEGER,
-		Number.MAX_SAFE_INTEGER,
-		Number.MIN_SAFE_INTEGER,
-		Number.MAX_SAFE_INTEGER,
-		Number.MIN_SAFE_INTEGER,
-		Number.MAX_SAFE_INTEGER
-	]
-
-	for (bot of bots) {
-		extremes[0] = Math.max(extremes[0], bot[0])
-		extremes[1] = Math.min(extremes[1], bot[0])
-		extremes[2] = Math.max(extremes[2], bot[1])
-		extremes[3] = Math.min(extremes[3], bot[1])
-		extremes[4] = Math.max(extremes[4], bot[2])
-		extremes[5] = Math.min(extremes[5], bot[2])
+	const findBounds = bots => {
+		let bounds = [
+			Number.MIN_SAFE_INTEGER,
+			Number.MAX_SAFE_INTEGER,
+			Number.MIN_SAFE_INTEGER,
+			Number.MAX_SAFE_INTEGER,
+			Number.MIN_SAFE_INTEGER,
+			Number.MAX_SAFE_INTEGER
+		]
+		for (bot of bots) {
+			bounds[0] = Math.max(bounds[0], bot[0])
+			bounds[1] = Math.min(bounds[1], bot[0])
+			bounds[2] = Math.max(bounds[2], bot[1])
+			bounds[3] = Math.min(bounds[3], bot[1])
+			bounds[4] = Math.max(bounds[4], bot[2])
+			bounds[5] = Math.min(bounds[5], bot[2])
+		}
+		// console.log(bounds)
+		return bounds
 	}
 
-	console.log(extremes)
+	const scaleByRes = (bots, res) => {
+		for (b of bots) {
+			b[0] /= res
+			b[1] /= res
+			b[2] /= res
+			b[3] /= res
+		}
+	}
+
+	const findBestLocation = (bots, res) => {
+		let bounds = findBounds(bots)
+
+		for (x = bounds[1]; x <= bounds[0]; x += res) {
+			for (y = bounds[3]; y <= bounds[2]; y += res) {
+				for (z = bounds[5]; z <= bounds[4]; z += res) {}
+			}
+		}
+	}
+
+	let res = 2 ** 20
+	let botsString = JSON.stringify(bots)
+	let bounds = findBounds(JSON.parse(botString))
+
+	while (res > 1) {
+		let botsCopy = JSON.parse(botsString)
+
+		// find cube that has most overlaps in it
+		findBestLocation(botsCopy, res)
+
+		res /= 2
+	}
 })
