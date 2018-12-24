@@ -11,20 +11,23 @@ aocLoader(
 		return b.match(/[0-9-]+/g).map(Number)
 	})
 
-	bots.sort((a, b) => b[3] - a[3])
-	console.log(bots)
-	let lead = bots[0]
-	let numInRange = 1
+	let extremes = [
+		Number.MIN_SAFE_INTEGER,
+		Number.MAX_SAFE_INTEGER,
+		Number.MIN_SAFE_INTEGER,
+		Number.MAX_SAFE_INTEGER,
+		Number.MIN_SAFE_INTEGER,
+		Number.MAX_SAFE_INTEGER
+	]
 
-	for (let i = 1; i < bots.length; i++) {
-		let c = bots[i]
-		let mD =
-			Math.abs(c[0] - lead[0]) +
-			Math.abs(c[1] - lead[1]) +
-			Math.abs(c[2] - lead[2])
-
-		if (mD <= lead[3]) numInRange++
+	for (bot of bots) {
+		extremes[0] = Math.max(extremes[0], bot[0])
+		extremes[1] = Math.min(extremes[1], bot[0])
+		extremes[2] = Math.max(extremes[2], bot[1])
+		extremes[3] = Math.min(extremes[3], bot[1])
+		extremes[4] = Math.max(extremes[4], bot[2])
+		extremes[5] = Math.min(extremes[5], bot[2])
 	}
 
-	console.log(numInRange)
+	console.log(extremes)
 })
