@@ -1,66 +1,284 @@
-const aocLoader = require('aoc-loader')
-
-aocLoader(
-	2018,
-	23,
-	'53616c7465645f5ff8b638d2c68c03cc3d780a40205335f819cd49e1e74f43b6b80111b52cbbaf243b1bf68109e5c3f4'
-).then(d => {
-	// d = require('fs').readFileSync('./test', 'utf8')
-
-	let bots = d.split('\n').map(b => {
-		return b.match(/[0-9-]+/g).map(Number)
+const fs = require('fs')
+const data = fs
+	.readFileSync('./input')
+	.toString()
+	.split('\n')
+	.map(v => {
+		let match = v.match(/pos=<(-?\d+),(-?\d+),(-?\d+)>, r=(-?\d+)/)
+		return {
+			x: parseInt(match[1], 10),
+			y: parseInt(match[2], 10),
+			z: parseInt(match[3], 10),
+			r: parseInt(match[4], 10)
+		}
 	})
 
-	const findBounds = bots => {
-		let bounds = [
-			Number.MIN_SAFE_INTEGER,
-			Number.MAX_SAFE_INTEGER,
-			Number.MIN_SAFE_INTEGER,
-			Number.MAX_SAFE_INTEGER,
-			Number.MIN_SAFE_INTEGER,
-			Number.MAX_SAFE_INTEGER
-		]
-		for (bot of bots) {
-			bounds[0] = Math.max(bounds[0], bot[0])
-			bounds[1] = Math.min(bounds[1], bot[0])
-			bounds[2] = Math.max(bounds[2], bot[1])
-			bounds[3] = Math.min(bounds[3], bot[1])
-			bounds[4] = Math.max(bounds[4], bot[2])
-			bounds[5] = Math.min(bounds[5], bot[2])
-		}
-		// console.log(bounds)
-		return bounds
-	}
+let strongest = null,
+	max = -Infinity
+let minx = Infinity,
+	maxx = -Infinity,
+	miny = Infinity,
+	maxy = -Infinity,
+	minz = Infinity,
+	maxz = -Infinity
 
-	const scaleByRes = (bots, res) => {
-		for (b of bots) {
-			b[0] /= res
-			b[1] /= res
-			b[2] /= res
-			b[3] /= res
-		}
-	}
+data.forEach(nb => {
+	minx = Math.min(nb.x, minx)
+	maxx = Math.max(nb.x, maxx)
+	miny = Math.min(nb.x, miny)
+	maxy = Math.max(nb.x, maxy)
+	minz = Math.min(nb.x, minz)
+	maxz = Math.max(nb.x, maxz)
 
-	const findBestLocation = (bots, res) => {
-		let bounds = findBounds(bots)
-
-		for (x = bounds[1]; x <= bounds[0]; x += res) {
-			for (y = bounds[3]; y <= bounds[2]; y += res) {
-				for (z = bounds[5]; z <= bounds[4]; z += res) {}
-			}
-		}
-	}
-
-	let res = 2 ** 20
-	let botsString = JSON.stringify(bots)
-	let bounds = findBounds(JSON.parse(botString))
-
-	while (res > 1) {
-		let botsCopy = JSON.parse(botsString)
-
-		// find cube that has most overlaps in it
-		findBestLocation(botsCopy, res)
-
-		res /= 2
+	if (nb.r > max) {
+		max = nb.r
+		strongest = nb
 	}
 })
+
+const mhd = (a, b) =>
+	Math.abs(a.x - b.x) + Math.abs(a.y - b.y) + Math.abs(a.z - b.z)
+
+let a = data.filter(v => mhd(v, strongest) <= strongest.r)
+console.log('part 1:', a.length)
+
+const countBots = bot => {
+	let count = 0
+	data.forEach(nb => {
+		if (mhd(bot, nb) <= nb.r) count++
+	})
+	return count
+}
+
+const inRangeOfVolume = (vol, bot) => {
+	let cost = 0
+	if (bot.x > vol.xmax) {
+		cost += bot.x - vol.xmax
+	} else if (bot.x < vol.xmin) {
+		cost += vol.xmin - bot.x
+	}
+	if (bot.y > vol.ymax) {
+		cost += bot.y - vol.ymax
+	} else if (bot.y < vol.ymin) {
+		cost += vol.ymin - bot.y
+	}
+	if (bot.z > vol.zmax) {
+		cost += bot.z - vol.zmax
+	} else if (bot.z < vol.zmin) {
+		cost += vol.zmin - bot.z
+	}
+	return cost <= bot.r
+}
+
+const inRangeOfVolumeWorstCase = (vol, bot) => {
+	let cost = 0
+	if (bot.x < vol.xmin) {
+		cost += vol.xmax - bot.x
+	} else if (bot.x > vol.xmax) {
+		cost += bot.x - vol.xmin
+	} else {
+		cost += Math.max(bot.x - vol.xmin, vol.xmax - bot.x)
+	}
+	if (bot.y < vol.ymin) {
+		cost += vol.ymax - bot.y
+	} else if (bot.y > vol.ymax) {
+		cost += bot.y - vol.ymin
+	} else {
+		cost += Math.max(bot.y - vol.ymin, vol.ymax - bot.y)
+	}
+	if (bot.z < vol.zmin) {
+		cost += vol.zmax - bot.z
+	} else if (bot.z > vol.zmax) {
+		cost += bot.z - vol.zmin
+	} else {
+		cost += Math.max(bot.z - vol.zmin, vol.zmax - bot.z)
+	}
+	return cost
+}
+
+const nearestPoint = (vol, bot) => {
+	let nx = bot.x > vol.xmax ? vol.xmax : bot.x < vol.xmin ? vol.xmin : bot.x,
+		ny = bot.y > vol.ymax ? vol.ymax : bot.y < vol.ymin ? vol.ymin : bot.y,
+		nz = bot.z > vol.zmax ? vol.zmax : bot.z < vol.zmin ? vol.zmin : bot.z
+	return { x: nx, y: ny, z: nz }
+}
+
+const botsInRange = vol => {
+	let set = new Set()
+	for (let nb of data) {
+		if (inRangeOfVolume(vol, nb)) {
+			set.add(nb)
+		}
+	}
+	return set
+}
+const countBotsReachVolume = vol => {
+	let count = 0
+	for (let nb of data) {
+		if (inRangeOfVolume(vol, nb)) count++
+	}
+	return count
+}
+
+const setEquals = (a, b) => {
+	if (a.size !== b.size) {
+		return false
+	}
+	for (const item of a) {
+		if (!b.has(item)) return false
+	}
+	return true
+}
+
+let vol = {
+	xmin: Math.min(minx, miny, minz),
+	xmax: Math.max(maxx, maxy, maxz),
+	ymin: Math.min(minx, miny, minz),
+	ymax: Math.max(maxx, maxy, maxz),
+	zmin: Math.min(minx, miny, minz),
+	zmax: Math.max(maxx, maxy, maxz)
+}
+
+const subdivide = vol => {
+	if (vol.xmin === vol.xmax && vol.ymin === vol.ymax && vol.zmin === vol.zmax) {
+		return null
+	}
+
+	let xmid = Math.floor((vol.xmax - vol.xmin) / 2 + vol.xmin),
+		ymid = Math.floor((vol.ymax - vol.ymin) / 2 + vol.ymin),
+		zmid = Math.floor((vol.zmax - vol.zmin) / 2 + vol.zmin)
+
+	return [
+		{
+			xmin: vol.xmin,
+			xmax: xmid,
+			ymin: vol.ymin,
+			ymax: ymid,
+			zmin: vol.zmin,
+			zmax: zmid
+		},
+		{
+			xmin: xmid + 1,
+			xmax: vol.xmax,
+			ymin: vol.ymin,
+			ymax: ymid,
+			zmin: vol.zmin,
+			zmax: zmid
+		},
+		{
+			xmin: vol.xmin,
+			xmax: xmid,
+			ymin: ymid + 1,
+			ymax: vol.ymax,
+			zmin: vol.zmin,
+			zmax: zmid
+		},
+		{
+			xmin: xmid + 1,
+			xmax: vol.xmax,
+			ymin: ymid + 1,
+			ymax: vol.ymax,
+			zmin: vol.zmin,
+			zmax: zmid
+		},
+		{
+			xmin: vol.xmin,
+			xmax: xmid,
+			ymin: vol.ymin,
+			ymax: ymid,
+			zmin: zmid + 1,
+			zmax: vol.zmax
+		},
+		{
+			xmin: xmid + 1,
+			xmax: vol.xmax,
+			ymin: vol.ymin,
+			ymax: ymid,
+			zmin: zmid + 1,
+			zmax: vol.zmax
+		},
+		{
+			xmin: vol.xmin,
+			xmax: xmid,
+			ymin: ymid + 1,
+			ymax: vol.ymax,
+			zmin: zmid + 1,
+			zmax: vol.zmax
+		},
+		{
+			xmin: xmid + 1,
+			xmax: vol.xmax,
+			ymin: ymid + 1,
+			ymax: vol.ymax,
+			zmin: zmid + 1,
+			zmax: vol.zmax
+		}
+	]
+}
+
+let origin = { x: 0, y: 0, z: 0 }
+let vols = [vol]
+while (
+	vols.length > 1 ||
+	vols[0].xmin !== vols[0].xmax ||
+	vols[0].ymin !== vols[0].ymax ||
+	vols[0].zmin !== vols[0].zmax
+) {
+	let best = -Infinity
+
+	let newVols = [],
+		sets = new Map()
+	vols
+		.reduce((acc, cur) => acc.concat(subdivide(cur)), [])
+		.forEach(v => {
+			v.inRange = botsInRange(v)
+			let c = v.inRange.size
+			if (c > best) {
+				best = c
+				newVols = [v]
+			} else if (c === best) {
+				newVols.push(v)
+			}
+		})
+
+	newVols.forEach(nv => {
+		for (let bestSet of sets.keys()) {
+			if (!setEquals(nv.inRange, bestSet)) {
+				continue
+			}
+			let d1 = mhd(nearestPoint(nv, origin), origin),
+				d2 = mhd(nearestPoint(sets.get(bestSet), origin), origin)
+			if (d1 < d2) {
+				sets.set(bestSet, nv)
+			}
+			return
+		}
+		sets.set(nv.inRange, nv)
+	})
+	vols = [...sets.values()]
+}
+
+let np = nearestPoint(vols[0], origin)
+console.log(mhd(np, origin), vols[0].inRange.size, np)
+
+// hack solution:
+// arrived at these constants with a greedy algorithm on random points
+// where i reduced the ranges based on previous output until they seemed
+// not to get any better. then i plugged those numbers in below and made
+// sure shrinking didn't get any closer (by adding the second set of while
+// loops and comparing results in the terminal)
+let bestCount = 910,
+	b = {
+		x: 22639062,
+		y: 27293111,
+		z: 45608839
+	}
+
+let c = countBots(b)
+while (countBots(Object.assign({}, b, { x: b.x - 1 })) === 910) b.x--
+while (countBots(Object.assign({}, b, { y: b.y - 1 })) === 910) b.y--
+while (countBots(Object.assign({}, b, { z: b.z - 1 })) === 910) b.z--
+while (countBots(Object.assign({}, b, { x: b.x - 1 })) === 910) b.x--
+while (countBots(Object.assign({}, b, { y: b.y - 1 })) === 910) b.y--
+while (countBots(Object.assign({}, b, { z: b.z - 1 })) === 910) b.z--
+console.log(mhd({ x: 0, y: 0, z: 0 }, b), bestCount, b)
