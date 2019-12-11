@@ -1,15 +1,48 @@
 file = open('./input')
 
-input = 2
+canvas = {}
+position = (0, 0)
+direction = 0
+input = 0
+
+paint = True
 
 
-def output(code):
-    print(code)
+def output(x):
+    global input
+    global position
+    global direction
+    global paint
+
+    if paint:
+        canvas[position] = x
+    else:
+        if x == 0:
+            direction -= 1
+        if x == 1:
+            direction += 1
+
+        if direction < 0:
+            direction = 3
+        elif direction > 3:
+            direction = 0
+
+        if direction == 0:  # up
+            position = (position[0] - 1, position[1])
+        if direction == 1:  # right
+            position = (position[0], position[1] + 1)
+        if direction == 2:  # down
+            position = (position[0] + 1, position[1])
+        if direction == 3:  # left
+            position = (position[0], position[1] - 1)
+        input = canvas[position] if position in canvas else 0
+
+    paint = not paint
 
 
 def getValue(mode, raw, mem):
     if mode == 0:
-        # position
+            # position
         if (raw >= len(mem)):
             mem.extend([0 for _ in range(raw - len(mem) + 1)])
         return mem[raw]
@@ -113,4 +146,4 @@ while (nums[cur] % 100 != 99):
     else:
         break
 
-print('HALT')
+print(len(canvas))
