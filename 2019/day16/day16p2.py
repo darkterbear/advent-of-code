@@ -4,39 +4,21 @@ offset = 5971723
 phases = 100
 
 
-def generatePattern(spacing):
-    while True:
-        for i in range(spacing):
-            yield 0
-        for i in range(spacing):
-            yield 1
-        for i in range(spacing):
-            yield 0
-        for i in range(spacing):
-            yield -1
+signal2h = signal[offset:]
 
 
-def dot(signal, pattern):
-    s = 0
-    # print(signal)
-    for c in signal:
-        s += int(c) * next(pattern)
-    return s
-
-
-def fft(signal):
-    length = len(signal)
-    output = ''
-    for element in range(1, length + 1):
-        pattern = generatePattern(element)
-        next(pattern)  # throw out the first one
-        output += str(abs(dot(signal, pattern)) % 10)
-    return output
+def transform(signal2h):
+    result = ''
+    cumulative = 0
+    for c in reversed(signal2h):
+        cumulative += int(c)
+        cumulative %= 10
+        result += str(cumulative)
+    return result[::-1]
 
 
 for i in range(phases):
     print(i)
-    signal = fft(signal)
+    signal2h = transform(signal2h)
 
-print(signal)
-print(signal[offset:offset + 8])
+print(signal2h[:8])
