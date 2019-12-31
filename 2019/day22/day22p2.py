@@ -1,28 +1,16 @@
-num_cards = 119315717514047
-target_index = 2020
-
-input = open('./input')
-for line in input:
-    line = line.replace('\n', '')
-    tokens = line.split(' ')
-
-    if tokens[0] == 'cut':
-        n = int(tokens[1])
-        if n > 0:
-            if target_index >= n:
-                target_index -= n
-            else:
-                target_index += num_cards - n
-        else:
-            if target_index < num_cards + n:
-                target_index -= n
-            else:
-                target_index -= num_cards + n
-    elif tokens[1] == 'into':
-        target_index = num_cards - target_index - 1
-    else:
-        increment = int(tokens[3])
-        target_index = (target_index * increment) % num_cards
-
-
-print(target_index)
+m = 119315717514047
+n = 101741582076661
+pos = 2020
+shuffles = {'deal with increment ': lambda x, m, a, b: (a*x % m, b*x % m),
+            'deal into new stack': lambda _, m, a, b: (-a % m, (m-1-b) % m),
+            'cut ': lambda x, m, a, b: (a, (b-x) % m)}
+a, b = 1, 0
+with open('./input') as f:
+    for s in f.read().strip().split('\n'):
+        for name, fn in shuffles.items():
+            if s.startswith(name):
+                arg = int(s[len(name):]) if name[-1] == ' ' else 0
+                a, b = fn(arg, m, a, b)
+                break
+r = (b * pow(1-a, m-2, m)) % m
+print(f"Card at #{pos}: {((pos - r) * pow(a, n*(m-2), m) + r) % m}")
