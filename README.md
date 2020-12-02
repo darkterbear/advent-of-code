@@ -1,2 +1,2 @@
-# advent-of-code-2015
-My solutions to adventofcode.com problems for 2015.
+# advent-of-code
+My solutions to adventofcode.com problems.
